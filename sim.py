@@ -1,8 +1,4 @@
 '''
 Test
-
-ishdvioshgohsp
-
-teststs
 '''
 
