@@ -1,9 +1,10 @@
 """
 Class makes use of quaternions to rate a given vector
 """
-from cmath import asin
-from math import atan2, cos, sin, sqrt, pi
+from math import atan2, cos, asin, sin, sqrt, pi
+from ntpath import join
 from random import random, seed
+from sys import orig_argv
 from vector import Vector
 
 # Class for representing Quaternion
@@ -12,6 +13,8 @@ class Quaternion:
     # initializes vector  
     def __init__(self, w, x, y, z) -> None:
         self.w = w
+        if self.w < 0.00001 and self.w > 0:
+            self.w = 0
         self.x = x
         self.y = y
         self.z = z
@@ -19,10 +22,11 @@ class Quaternion:
     # norms quaternion
     def norm_quaternion(self):
         norm = sqrt(self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z)
-        self.w = self.w / norm
-        self.x = self.x / norm
-        self.y = self.y / norm
-        self.z = self.z / norm
+        if norm != 0:
+            self.w = self.w / norm
+            self.x = self.x / norm
+            self.y = self.y / norm
+            self.z = self.z / norm
 
     # Method returns inverse Quaternion
     def get_conjugate(self): 
@@ -37,13 +41,14 @@ class Quaternion:
         # convert degree to rad
         if degree:
             angle = angle % 360
-            print(angle)
             angle = pi * angle / 180
 
         half_angle = angle / 2
 
         normed_vector = vector.get_normed_vector()
+        print(normed_vector.get_params_as_list())
         real_part = cos(half_angle)
+        print('real part' + str(real_part))
         i_part = sin(half_angle) * normed_vector.x
         j_part = sin(half_angle) * normed_vector.y
         k_part = sin(half_angle) * normed_vector.z
@@ -67,7 +72,6 @@ class Quaternion:
         q.norm_quaternion()
         return q
 
-
 class QuaternionCalculation:
 
     # Method returns quaternions multiplicated
@@ -84,6 +88,11 @@ class QuaternionCalculation:
         quaternion_vector = Quaternion(0, vector.x, vector.y, vector.z)
         quaternion_rotation_axis = Quaternion.get_quaternion_from_angle(Quaternion, angle, rotation_axis_vector, True)
         quaternion_rotation_axis_inverse = Quaternion.get_conjugate(quaternion_rotation_axis)
+
+        print("Vector " + str(quaternion_vector.get_params_as_list()))
+        print("Rotation Axis " + str(quaternion_rotation_axis.get_params_as_list()))
+        print("Rotation Axis Inverse " + str(quaternion_rotation_axis_inverse.get_params_as_list()))
+
 
         q1 = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation ,quaternion_rotation_axis, quaternion_vector)
         return QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, q1, quaternion_rotation_axis_inverse)

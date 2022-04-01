@@ -3,6 +3,7 @@ Class for testing correct implementation of classes
 """
 from random import random, seed
 from traceback import print_tb
+from turtle import st
 from quaternion import Quaternion, QuaternionCalculation
 from vector import Vector
 from math import *
@@ -20,7 +21,7 @@ q = QuaternionCalculation.euler_to_quaternion(QuaternionCalculation,phi, theta, 
 """
 Testing Quaternion
 """
-def print_list(list):
+def print_list(list, vector = False):
     for i in range(0, len(list)):
         print(list[i])
 
@@ -58,10 +59,17 @@ print_list(result.get_params_as_list())
 print(QuaternionCalculation.quaternion_to_euler(QuaternionCalculation, result).get_params_as_list())
 
 
-for i in range(0, 1000):
-    seed()
+seed()
+
+for i in range(0, 10):
+    print('--'*50)
     angle = int(random() * 360)
-    print(angle)
     q = Quaternion.get_random_quaternion(Quaternion)
-    print('--'*10)
-    #print_list(q.get_params_as_list())
+    vector = Vector.get_random_vector(Vector, 10)
+    rotation_axis_vector = Vector.get_random_vector(Vector, 10);
+    rotation_axis_vector = rotation_axis_z
+    rotated_quaternion = QuaternionCalculation.calculate_rotation(QuaternionCalculation, angle, vector, rotation_axis_vector)    
+    print('(' + str(vector.x) + ', ' + str(vector.y) + ', ' + str(vector.z) + ')' + '  ', end='')
+    print('(' + str(rotation_axis_vector.x) + ', ' + str(rotation_axis_vector.y) + ', ' + str(rotation_axis_vector.z) + ')' + '  angle=' + str(angle) + '°  ', end='')
+    print('(' + str(rotated_quaternion.w) + ', ' + str(rotated_quaternion.x) + ', ' + str(rotated_quaternion.y) + ', ' + str(rotated_quaternion.z) + ')' + '  ')  
+    print_list(QuaternionCalculation.quaternion_to_euler(QuaternionCalculation, rotated_quaternion).get_params_as_list())

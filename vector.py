@@ -19,16 +19,20 @@ class Vector:
     # Returns normed vector
     def get_normed_vector(self):
         norm = self.__norm__()
-        return Vector(self.x / norm, self.y / norm, self.z / norm)
+        if norm != 0:
+            return Vector(self.x / norm, self.y / norm, self.z / norm)
+        else:
+            return Vector(0, 0, 0)
 
     # Returns vector values as list
     def get_params_as_list(self):
         return [self.x, self.y, self.z]
 
-    # method returns random vector
-    def get_rando_vector(self, random_range: int = 1):
+    # Returns random vector with int values
+    def get_random_vector(self, random_range: int = 1):
         seed()
-        x = random() * random_range
-        y = random() * random_range
-        z = random() * random_range
-        return Vector(x,y,z)
+        x = int(random() * random_range)
+        y = int(random() * random_range)
+        z = int(random() * random_range)
+        v = Vector(x,y,z)
+        return v
