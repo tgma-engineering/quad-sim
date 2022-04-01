@@ -57,7 +57,7 @@ class Quaternion:
         return [self.w, self.x, self.y, self.z]
 
     def get_random_quaternion():
-        pass
+        pass 
 
 class QuaternionCalculation:
 
