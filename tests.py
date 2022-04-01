@@ -1,7 +1,7 @@
 """
 Class for testing correct implementation of classes
 """
-
+from random import random, seed
 from traceback import print_tb
 from quaternion import Quaternion, QuaternionCalculation
 from vector import Vector
@@ -56,3 +56,12 @@ result = QuaternionCalculation.calculate_rotation(QuaternionCalculation, 90, v3,
 print_list(result.get_params_as_list())
 
 print(QuaternionCalculation.quaternion_to_euler(QuaternionCalculation, result).get_params_as_list())
+
+
+for i in range(0, 1000):
+    seed()
+    angle = int(random() * 360)
+    print(angle)
+    q = Quaternion.get_random_quaternion(Quaternion)
+    print('--'*10)
+    #print_list(q.get_params_as_list())

@@ -3,6 +3,7 @@ Class makes use of quaternions to rate a given vector
 """
 from cmath import asin
 from math import atan2, cos, sin, sqrt, pi
+from random import random, seed
 from vector import Vector
 
 # Class for representing Quaternion
@@ -56,8 +57,16 @@ class Quaternion:
     def get_params_as_list(self):
         return [self.w, self.x, self.y, self.z]
 
-    def get_random_quaternion():
-        pass 
+    def get_random_quaternion(self):
+        seed()
+        w = random() * 10
+        x = random() * 10
+        y = random() * 10
+        z = random() * 10
+        q = Quaternion(w,x,y,z)
+        q.norm_quaternion()
+        return q
+
 
 class QuaternionCalculation:
 
