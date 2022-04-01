@@ -36,11 +36,11 @@ rotation_axis_z = Vector(0,0,1)
 q1 = Quaternion(0,0,0.6,0.8)
 q1.norm_quaternion()
 print_list(q1.get_params_as_list())
-print_list(q1.get_inverse().get_params_as_list())
+print_list(q1.get_conjugate().get_params_as_list())
 print('-'*40)
 
 print_list(Quaternion.get_quaternion_from_angle(Quaternion, angle=90, vector=rotation_axis_x).get_params_as_list())
-print_list(Quaternion.get_quaternion_from_angle(Quaternion, angle=90, vector=rotation_axis_x).get_inverse().get_params_as_list())
+print_list(Quaternion.get_quaternion_from_angle(Quaternion, angle=90, vector=rotation_axis_x).get_conjugate().get_params_as_list())
 
 # testing for correct multiplication calculation
 q2 = Quaternion(1,2,3,4)

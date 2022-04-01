@@ -24,7 +24,7 @@ class Quaternion:
         self.z = self.z / norm
 
     # Method returns inverse Quaternion
-    def get_inverse(self): 
+    def get_conjugate(self): 
         w = self.w
         x = 0 if -self.x == 0 else -self.x
         y = 0 if -self.y == 0 else -self.y
@@ -50,11 +50,14 @@ class Quaternion:
         return Quaternion(real_part.real, i_part.real, j_part.real, k_part.real)
 
     # Method returns inverse directly from angle
-    def get_inverse_from_angle(self, angle: float):
+    def get_conjugate_from_angle(self, angle: float):
         return Quaternion(cos(-angle), sin(-angle) * self.x, sin(-angle) * self.y, sin(-angle) * self.z)
 
     def get_params_as_list(self):
         return [self.w, self.x, self.y, self.z]
+
+    def get_random_quaternion():
+        pass
 
 class QuaternionCalculation:
 
@@ -71,7 +74,7 @@ class QuaternionCalculation:
     def calculate_rotation(self, angle: float, vector: Vector, rotation_axis_vector: Vector) -> Quaternion:
         quaternion_vector = Quaternion(0, vector.x, vector.y, vector.z)
         quaternion_rotation_axis = Quaternion.get_quaternion_from_angle(Quaternion, angle, rotation_axis_vector, True)
-        quaternion_rotation_axis_inverse = Quaternion.get_inverse(quaternion_rotation_axis)
+        quaternion_rotation_axis_inverse = Quaternion.get_conjugate(quaternion_rotation_axis)
 
         q1 = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation ,quaternion_rotation_axis, quaternion_vector)
         return QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, q1, quaternion_rotation_axis_inverse)
