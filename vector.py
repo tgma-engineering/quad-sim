@@ -4,6 +4,7 @@ Class for making use of vectors
 from cmath import sqrt
 from random import random, seed
 from secrets import randbelow
+from typing import List
 
 class Vector:
 
@@ -36,3 +37,16 @@ class Vector:
         z = int(random() * random_range)
         v = Vector(x,y,z)
         return v
+
+    def multiply_vector(self, coefficent: float):
+        x = self.x * coefficent
+        y = self.y * coefficent
+        z = self.z * coefficent
+        return Vector(x, y, z)
+
+    def add_vector_list(self, vectors: List):
+        x,y,z = 0
+        for i in range(0, len(vectors)):
+            x = vectors[i].x 
+        
+        return Vector(x,y,z)
