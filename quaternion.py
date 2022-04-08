@@ -92,7 +92,7 @@ class Quaternion:
         return Quaternion(numpy_arr[0], numpy_arr[1], numpy_arr[2], numpy_arr[3])
 
 class QuaternionCalculation:
-
+    
     # Method returns quaternions multiplicated
     def __quaternion_multiplication__(self, quaternion1: Quaternion, quaternion2: Quaternion) -> Quaternion:
         real_part = quaternion1.w * quaternion2.w - quaternion1.x * quaternion2.x - quaternion1.y * quaternion2.y - quaternion1.z * quaternion2.z
