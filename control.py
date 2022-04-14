@@ -20,10 +20,20 @@ class Controller:
         eq_thrust = np.sqrt(9.81 * m / (4 * k))
         self.u_eq = eq_thrust * np.ones(4, dtype=np.float64)
 
-        A = self.jacobian_x(x_dot_const, x_eq, self.u_eq)
-        B = self.jacobian_u(x_dot_const, x_eq, self.u_eq)
-        Q = np.eye(14, dtype=np.float64)
-        R = 0.1 * np.eye(4, dtype=np.float64)
+        jacobian_x = self.jacobian_x(x_dot_const, x_eq, self.u_eq)
+        jacobian_u = self.jacobian_u(x_dot_const, x_eq, self.u_eq)
+
+        # Remove real parts of quaternion rotation and angular velocity because its uncontrollable
+        # and can be reconstructed from the other three parts and the fact that rotation quaternions have norm 1.
+
+        A = np.empty((12, 12), dtype=np.float64)
+        B = np.empty((12, 4), dtype=np.float64)
+
+        A = np.delete(np.delete(jacobian_x, [6, 10], 0), [6, 10], 1)
+        B = np.delete(jacobian_u, [6, 10], 0)
+
+        Q = np.eye(12, dtype=np.float64)
+        R = 0.5 * np.eye(4, dtype=np.float64)
 
         self.K = lqr(A, B, Q, R)  # LQR Gain Matrix
     
@@ -31,7 +41,16 @@ class Controller:
         """
         x is the current system state, x_r is the desired reference state.
         """
-        u = self.K @ (x - x_r) + self.u_eq
+        x_e = np.zeros(12, dtype=np.float64)  # Position error vector
+        x_e[:6] = x[:6] - x_r[:6]  # Translation errors are simple differences
+
+        # The quaternion error is the result of a quaternion multiplication
+        rot_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[6], x_r[7], x_r[8], x_r[9]), Quaternion(x[6], x[7], x[8], x[9]).get_conjugate())
+        x_e[6:9] = rot_err.get_as_numpy_arr()[1:4]  # Controller only uses the Quaternions's Vector
+        ang_vel_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[10], x_r[11], x_r[12], x_r[13]), Quaternion(x[10], x[11], x[12], x[13]).get_conjugate())
+        x_e[9:12] = ang_vel_err.get_as_numpy_arr()[1:4]
+
+        u = self.K @ x_e + self.u_eq
         return u
 
 
@@ -55,7 +74,6 @@ class Controller:
         x_dot[:3] = velocity
 
 
-
         thrustVector = k/m * np.array([0, 0, np.sum(u**2)], dtype=np.float64)
         # real orientation of thrust vector
         rotationQuaternion = Quaternion(x[6], x[7], x[8], x[9])
@@ -64,9 +82,7 @@ class Controller:
         # Same drag for x,y,z
         dragVector = -1 * k * velocity
 
-        accleration_vector = thrustVector + gravityVector + dragVector
-
-
+        accleration_vector = thrustVectorRotated + gravityVector + dragVector
 
 
         x_dot[3:6] = accleration_vector
@@ -84,15 +100,12 @@ class Controller:
         x_dot[9] = v1 * alpha * x[8] * 0.5 - v2 * alpha * x[7] * 0.5 + v3 * alpha * x[6] * 0.5
 
 
-
-
         torque_x = arm_length * k * (w1**2 - w3**2)
         torque_y = arm_length * k * (w2**2 - w4**2)
         torque_z = arm_length * k * (w1**2 - w2**2 + w3**2 - w4**2)
         
         torqueVector = np.array([torque_x, torque_y, torque_z], np.float64)
         angular_accleration = torqueVector / inertia
-
 
 
         angular_accleration_norm = np.linalg.norm(angular_accleration)
@@ -117,7 +130,6 @@ class Controller:
         x_dot[13] = v1 * alpha * x[12] * 0.5 - v2 * alpha * x[11] * 0.5 + v3 * alpha * x[10] * 0.5
 
         return x_dot
-
 
 
     def jacobian_x(self, x_dot, x, u, eps=1e-4):
@@ -164,10 +176,12 @@ class Controller:
         return jacobian
 
 
-
-
+# Usage example
 if __name__ == '__main__':
-    x_0 = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)
+    x = np.array([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Actual state, depends on simulation
+    x_r = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Desired state, this one is a good start
 
-    ctrl = Controller()
-    #print(ctrl.control(x_0, x_0))
+    ctrl = Controller()  # Init controller object
+    actuation = ctrl.control(x, x_r)  # Returns array of optimal motor angular velocities
+
+    print(actuation)
