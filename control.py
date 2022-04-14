@@ -13,6 +13,7 @@ class Controller:
         inertia = .1 * np.ones(3, dtype=np.float64)
         arm_length = 1.
 
+        # Prepare function for linearization
         x_dot_const = lambda x, u : self.x_dot(x, u, k, m, inertia, arm_length)
 
         # Equilibrium point around which system dynamics are linearized
@@ -20,18 +21,19 @@ class Controller:
         eq_thrust = np.sqrt(9.81 * m / (4 * k))
         self.u_eq = eq_thrust * np.ones(4, dtype=np.float64)
 
+        # Linearize state dynamics around equilibrium point.
         jacobian_x = self.jacobian_x(x_dot_const, x_eq, self.u_eq)
         jacobian_u = self.jacobian_u(x_dot_const, x_eq, self.u_eq)
-
-        # Remove real parts of quaternion rotation and angular velocity because its uncontrollable
-        # and can be reconstructed from the other three parts and the fact that rotation quaternions have norm 1.
 
         A = np.empty((12, 12), dtype=np.float64)
         B = np.empty((12, 4), dtype=np.float64)
 
+        # Remove real parts of quaternion rotation and angular velocity because its uncontrollable.
+        # It can be reconstructed from other three Quaternion-Parts and the fact that rotation quaternions have norm 1.
         A = np.delete(np.delete(jacobian_x, [6, 10], 0), [6, 10], 1)
         B = np.delete(jacobian_u, [6, 10], 0)
 
+        # Diagonal LQR Weighting Matricies
         Q = np.eye(12, dtype=np.float64)
         R = 0.5 * np.eye(4, dtype=np.float64)
 
@@ -40,6 +42,8 @@ class Controller:
     def control(self, x, x_r):
         """
         x is the current system state, x_r is the desired reference state.
+        Uses precomputed LQR Gain Matrix to generate optimal control signals.
+        Control is returned as vector of rotor speeds.
         """
         x_e = np.zeros(12, dtype=np.float64)  # Position error vector
         x_e[:6] = x[:6] - x_r[:6]  # Translation errors are simple differences
@@ -55,6 +59,10 @@ class Controller:
 
 
     def x_dot(self, x, u, k, m, inertia, arm_length):
+        """
+        Copy of physics state space equations. Will be used to generate
+        linearization by finite difference numerical differentiation.
+        """
         k = k
         m = m
         inertia = inertia
@@ -176,7 +184,9 @@ class Controller:
         return jacobian
 
 
-# Usage example
+"""
+Example:
+"""
 if __name__ == '__main__':
     x = np.array([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Actual state, depends on simulation
     x_r = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Desired state, this one is a good start
