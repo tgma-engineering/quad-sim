@@ -30,12 +30,13 @@ while True:
     delta_time = (currentTime - startTime).total_seconds()
     startTime = currentTime
     gui.update(drone)
-    x_r = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    x_r = np.array([0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 0.],
                    dtype=np.float64)  # Desired state, this one is a good start
     x = np.concatenate((drone.positionVector, drone.velocityVector,
                         drone.rotationQuaternion.get_as_numpy_arr(),
                         drone.angularVelocity.get_as_numpy_arr()))
     u = control.control(x, x_r)
     u = np.clip(u, 0, 4)
+    # 1: Pos-Y, 2: Neg-X, 3: Neg-Y, 4: Pos-X
     drone.set_motor_speed(u[0], u[1], u[2], u[3])
     physics.calculatePosition(delta_time)

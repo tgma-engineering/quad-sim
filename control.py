@@ -33,9 +33,12 @@ class Controller:
         B = np.delete(jacobian_u, [6, 10], 0)
 
         # Diagonal LQR Weighting Matricies
-        Q = np.eye(12, dtype=np.float64)
-        Q[0:3, 0:3] *= 0.5
-        R = 0.1 * np.eye(4, dtype=np.float64)
+        q_vals = np.array([10, 10, 10,
+                           10, 10, 10,
+                           10, 10, 10,
+                           10, 10, 10], dtype=np.float64)
+        Q = np.diag(q_vals)
+        R = 1 * np.eye(4, dtype=np.float64)
 
         self.K = lqr(A, B, Q, R)  # LQR Gain Matrix
     
@@ -49,9 +52,11 @@ class Controller:
         x_e[:6] = x[:6] - x_r[:6]  # Translation errors are simple differences
 
         # The quaternion error is the result of a quaternion multiplication
-        rot_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[6], x_r[7], x_r[8], x_r[9]), Quaternion(x[6], x[7], x[8], x[9]).get_conjugate())
+        #rot_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[6], x_r[7], x_r[8], x_r[9]), Quaternion(x[6], x[7], x[8], x[9]).get_conjugate())
+        rot_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[6], x_r[7], x_r[8], x_r[9]).get_conjugate(), Quaternion(x[6], x[7], x[8], x[9]))
         x_e[6:9] = rot_err.get_as_numpy_arr()[1:4]  # Controller only uses the Quaternions's Vector
-        ang_vel_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[10], x_r[11], x_r[12], x_r[13]), Quaternion(x[10], x[11], x[12], x[13]).get_conjugate())
+        #ang_vel_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[10], x_r[11], x_r[12], x_r[13]), Quaternion(x[10], x[11], x[12], x[13]).get_conjugate())
+        ang_vel_err = QuaternionCalculation.__quaternion_multiplication__(QuaternionCalculation, Quaternion(x_r[10], x_r[11], x_r[12], x_r[13]).get_conjugate(), Quaternion(x[10], x[11], x[12], x[13]))
         x_e[9:12] = ang_vel_err.get_as_numpy_arr()[1:4]
 
         u = self.K @ x_e + self.u_eq
@@ -187,7 +192,7 @@ class Controller:
 Example:
 """
 if __name__ == '__main__':
-    x = np.array([1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Actual state, depends on simulation
+    x = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Actual state, depends on simulation
     x_r = np.array([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], dtype=np.float64)  # Desired state, this one is a good start
 
     ctrl = Controller()  # Init controller object
