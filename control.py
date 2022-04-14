@@ -4,7 +4,6 @@ from quaternion import QuaternionCalculation
 from lqr import stbl, ctrb, lqr
 
 
-
 class Controller:
     def __init__(self):
         # Constants
@@ -33,7 +32,8 @@ class Controller:
         B = np.delete(jacobian_u, [6, 10], 0)
 
         Q = np.eye(12, dtype=np.float64)
-        R = 0.5 * np.eye(4, dtype=np.float64)
+        Q[0:3, 0:3] *= 0.5
+        R = 0.1 * np.eye(4, dtype=np.float64)
 
         self.K = lqr(A, B, Q, R)  # LQR Gain Matrix
     
@@ -98,7 +98,6 @@ class Controller:
         x_dot[7] = v1 * alpha * x[6] * 0.5 + v2 * alpha * x[9] * 0.5 - v3 * alpha * x[8] * 0.5
         x_dot[8] = -v1 * alpha * x[9] * 0.5 + v2 * alpha * x[6] * 0.5 + v3 * alpha * x[7] * 0.5
         x_dot[9] = v1 * alpha * x[8] * 0.5 - v2 * alpha * x[7] * 0.5 + v3 * alpha * x[6] * 0.5
-
 
         torque_x = arm_length * k * (w1**2 - w3**2)
         torque_y = arm_length * k * (w2**2 - w4**2)
