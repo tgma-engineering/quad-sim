@@ -11,9 +11,8 @@ class Physics:
         self.drag = drag
 
     def calculatePosition(self, delta_time: float):
-
+        
         x = np.concatenate((self.drone.positionVector, self.drone.velocityVector, self.drone.rotationQuaternion.get_as_numpy_arr(), self.drone.angularVelocity.get_as_numpy_arr()))
-
         new_postion_velocity_vector = Physics.rk4(self.x_dot, x, 0, delta_time)
         """bis hierhin ist alles korrekt"""
 
@@ -34,7 +33,7 @@ class Physics:
 
         x_dot = np.zeros(14, dtype=np.float64)
         x_dot[:3] = velocity
-        x_dot[3:6] = self.__calculate_accleration__(rotation, velocity)
+        x_dot[3:6] = self.__calculate_accleration__()
         sqrt = np.sqrt(x[11] * x[11] + x[12] * x[12] + x[13] * x[13])
         if not sqrt == 0:
             v1 = x[11] / sqrt
@@ -48,7 +47,8 @@ class Physics:
         x_dot[8] = -v1 * alpha * x[9] * 0.5 + v2 * alpha * x[6] * 0.5 + v3 * alpha * x[7] * 0.5
         x_dot[9] = v1 * alpha * x[8] * 0.5 - v2 * alpha * x[7] * 0.5 + v3 * alpha * x[6] * 0.5
 
-        angular_accleration = self.drone.caculate_body_frame_torque()
+        # Rotation auf den Torque muss noch angwendet werden
+        angular_accleration = Physics.__calculate_angular_acceleration__(self.drone.caculate_body_frame_torque(), self.drone.inertia)
         angular_accleration_norm = np.linalg.norm(angular_accleration)
         angular_accleration_quaternion = Quaternion.get_quaternion_from_angle(Quaternion, angular_accleration_norm, angular_accleration)
 
@@ -72,19 +72,20 @@ class Physics:
 
         return x_dot
 
-    def __calculate_accleration__(self, rotation, velocity) -> np.array:
+    def __calculate_accleration__(self) -> np.array:
         thrustVector = self.drone.calculate_thrust()
         # real orientation of thrust vector
-        thrustVectorRotated = QuaternionCalculation.calculate_rotation_from_given_quaternion(rotation, thrustVector).get_imaginary_part_as_vector()
+        rotationQuaternion = self.drone.rotationQuaternion
+        thrustVectorRotated = QuaternionCalculation.calculate_rotation_from_given_quaternion(rotationQuaternion, thrustVector).get_imaginary_part_as_vector()
         # inverse of drone mass
         mass_inverse = 1 / self.drone.mass
         thrustVector = mass_inverse * thrustVectorRotated
         """noch als param auslagern"""
         gravityVector = np.array([0, 0, -self.drone.gravity])
         # Same drag for x,y,z
-        dragVector = -1 * self.drag * velocity
+        dragVector = -1 * self.drag
 
-        accleration_vector = thrustVectorRotated + gravityVector + dragVector
+        accleration_vector = thrustVector + gravityVector + dragVector
         return accleration_vector
 
     def __calculate_distance_from_velocity_vector__(velocity: np.array, delta_time: float):
@@ -96,6 +97,9 @@ class Physics:
         velocity = accleration * delta_time
 
         return velocity
+
+    def __calculate_angular_acceleration__(torque: np.array, inertia: np.array):
+        return torque / inertia
 
     """
     f: funktion
