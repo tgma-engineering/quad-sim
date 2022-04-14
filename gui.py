@@ -29,7 +29,7 @@ class Gui:
         plt.pause(0.0000000000000001)
         self.ax.clear()
 
-        drone.update_vertices()
+        #drone.update_vertices()
 
         #v = QuaternionCalculation.calculate_rotation_from_given_quaternion(drone.rotationQuaternion, numpy.array(v)).get_imaginary_part_as_vector()
         #drone.vertices_xAxis = vertices_xAxis

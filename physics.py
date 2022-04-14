@@ -13,7 +13,6 @@ class Physics:
     def calculatePosition(self, delta_time: float):
 
         x = np.concatenate((self.drone.positionVector, self.drone.velocityVector, self.drone.rotationQuaternion.get_as_numpy_arr(), self.drone.angularVelocity.get_as_numpy_arr()))
-
         new_postion_velocity_vector = Physics.rk4(self.x_dot, x, 0, delta_time)
         """bis hierhin ist alles korrekt"""
 

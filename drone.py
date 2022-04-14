@@ -60,15 +60,16 @@ class Drone:
         self.mass = mass
 
     def updatePosition(self, traveled_distance: np.array) -> None:
-        self.positionVector = traveled_distance
+        #self.positionVector = traveled_distance
 
-        if self.positionVector[2] < 0:
+        if self.positionVector[2] < 0 or traveled_distance[2] < 0:
             self.positionVector[2] = 0
+            self.update_vertices()
             self.velocityVector = np.array([0,0,0], dtype=np.float64)
-            self.angularVelocity = Quaternion(1,0,0,0)
-            self.set_motor_speed(0,0,0,0)
-
-        self.update_vertices()
+            #self.set_motor_speed(0,0,0,0)
+        else:
+            self.positionVector = traveled_distance
+            self.update_vertices()
 
     def update_velocity(self, vector: np.array):
         self.velocityVector = vector
@@ -105,7 +106,6 @@ class Drone:
 
     def update_vertices(self):
         x1 = QuaternionCalculation.calculate_rotation_from_given_quaternion(self.rotationQuaternion, self.x1).get_imaginary_part_as_vector()
-        print(QuaternionCalculation.calculate_rotation_from_given_quaternion(self.rotationQuaternion, self.x1).get_params_as_list())
         x1 = self.positionVector + x1
         x1 = tuple(x1.tolist())
         x2 = QuaternionCalculation.calculate_rotation_from_given_quaternion(self.rotationQuaternion, self.x2).get_imaginary_part_as_vector()
